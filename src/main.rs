@@ -6,9 +6,12 @@ pub type RghResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send 
 
 fn main() -> RghResult<()> {
     let mut app = build_app();
-    match app.clone().get_matches().subcommand() {
-        ("help", Some(_)) | _ => app.print_help()?,
-    }
+
+    let matches = app.get_matches();
+
+    let tag = matches.value_of("tag").unwrap();
+    let pkg = matches.value_of("packages").unwrap();
+
     Ok(())
 }
 
@@ -21,7 +24,10 @@ fn build_app() -> App<'static, 'static> {
         .version(crate_version!())
         .about(crate_description!())
         .setting(AppSettings::DeriveDisplayOrder)
-        .arg(Arg::with_name("tag").help("tag"))
-        .arg(Arg::with_name("packages").help("upload packages dir or file"))
-        .subcommand(SubCommand::with_name("help").alias("h").about("Show help"))
+        .args(&[
+            Arg::with_name("tag").help("tag").required(true),
+            Arg::with_name("packages")
+                .help("upload packages dir or file")
+                .required(true),
+        ])
 }
