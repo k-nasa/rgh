@@ -11,3 +11,4 @@ edition = "2018"
 
 [dependencies]
 clap = "2.33.0"
+surf = "1.0.3"
