@@ -12,13 +12,23 @@ fn main() -> RghResult<()> {
 
     let matches = app.get_matches();
 
-    let _tag = matches.value_of("tag").unwrap();
-    let _pkg = matches.value_of("packages").unwrap();
+    let tag_name = matches.value_of("tag").unwrap().to_owned();
+    let pkg = matches.value_of("packages").unwrap().to_owned();
 
     let (owner, repo) = read_gitconfig()?;
-    // TODO read GITHUB_TOKEN environment variable
 
-    // TODO parse arguments (create arguments struct)
+    let token = if let Some(token) = matches.value_of("token") {
+        token.to_string()
+    } else {
+        match std::env::var("GITHUB_TOKEN") {
+            Ok(t) => t,
+            Err(_) => {
+                println!("GITHUB_TOKEN is not setted");
+                println!("Please set it via `GITHUB_TOKEN` env variable or `-t` option");
+                std::process::exit(1);
+            }
+        }
+    };
 
     Ok(())
 }
