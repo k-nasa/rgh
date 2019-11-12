@@ -50,10 +50,7 @@ fn main() -> RghResult<()> {
             async move { create_release(&owner, &repo, token, request).await },
         );
 
-    match result {
-        Ok(_) => (),
-        Err(e) => println!("{}", e),
-    }
+    let id = result.map(|r| r.id)?;
 
     Ok(())
 }
