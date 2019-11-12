@@ -1,8 +1,18 @@
-use clap::{
-    crate_description, crate_name, crate_version, App, AppSettings, Arg,
-};
+use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
+use surf::{http, http::method::Method, url};
 
-pub type RghResult<T> = std::result::Result<T, Box<dyn std::error::Error + Send + Sync>>;
+type RghResult<T> = std::result::Result<T, RghError>;
+type RghError = Box<dyn std::error::Error + Send + Sync>;
+
+fn github_client(
+    method: http::Method,
+    url: String,
+    token: String,
+) -> Result<surf::Request<impl surf::middleware::HttpClient>, RghError> {
+    let url = url::Url::parse(&format!("https://api.github.com{}", url))?;
+
+    Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
+}
 
 fn main() -> RghResult<()> {
     let app = build_app();
