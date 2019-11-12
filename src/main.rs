@@ -14,9 +14,18 @@ fn main() -> RghResult<()> {
     let _tag = matches.value_of("tag").unwrap();
     let _pkg = matches.value_of("packages").unwrap();
 
+    // TODO get origin url
+
+    // TODO parse origin url to owner and repo
+
+    // TODO read GITHUB_TOKEN environment variable
+
+    // TODO parse arguments (create arguments struct)
+
     Ok(())
 }
 
+#[allow(dead_code)]
 fn github_client(
     method: http::Method,
     url: String,
@@ -27,6 +36,7 @@ fn github_client(
     Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
 }
 
+#[allow(dead_code)]
 async fn create_release(owner: &str, repo: &str, token: String) -> RghResult<()> {
     let mut body = HashMap::new();
 
