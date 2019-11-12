@@ -38,14 +38,14 @@ fn build_app() -> App<'static, 'static> {
                 .required(true),
         ])
         .arg(
-            Arg::with_name("target_commitish")
+            Arg::with_name("commit")
                 .help("Specifies the commitish value that determines where the Git tag is created from. Can be any branch or commit SHA. Unused if the Git tag already exists. Default: the repository's default branch (usually master).")
-                .long("target-commitish")
+                .long("commit")
                 .value_name("target-commitish"),
         )
         .arg(
             Arg::with_name("token")
-            .help("Set Github API Token")
+            .help("Set Github API Token (By default reads the GITHUB_TOKEN environment variable)")
             .long("token")
             .short("t")
             .value_name("token"),
