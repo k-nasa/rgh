@@ -1,8 +1,21 @@
+use std::collections::HashMap;
+
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
 use surf::{http, http::method::Method, url};
 
 type RghResult<T> = std::result::Result<T, RghError>;
 type RghError = Box<dyn std::error::Error + Send + Sync>;
+
+fn main() -> RghResult<()> {
+    let app = build_app();
+
+    let matches = app.get_matches();
+
+    let _tag = matches.value_of("tag").unwrap();
+    let _pkg = matches.value_of("packages").unwrap();
+
+    Ok(())
+}
 
 fn github_client(
     method: http::Method,
@@ -14,13 +27,24 @@ fn github_client(
     Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
 }
 
-fn main() -> RghResult<()> {
-    let app = build_app();
+async fn create_release(owner: &str, repo: &str, token: String) -> RghResult<()> {
+    let mut body = HashMap::new();
 
-    let matches = app.get_matches();
+    body.insert("tag_name", "");
+    body.insert("target_commitish", "");
+    body.insert("name", "");
+    body.insert("body", "");
+    body.insert("draft", "");
+    body.insert("prerelease", "");
 
-    let _tag = matches.value_of("tag").unwrap();
-    let _pkg = matches.value_of("packages").unwrap();
+    github_client(
+        Method::POST,
+        format!("/repos/{}/{}/releases", owner, repo),
+        token
+    )?
+    .body_json(&body)?
+    .recv_string()
+    .await?;
 
     Ok(())
 }
