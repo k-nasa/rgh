@@ -13,3 +13,4 @@ edition = "2018"
 clap = "2.33.0"
 surf = "1.0.3"
 async-std = "0.99.12"
+serde = { version="1.0.102", features = ["derive"] }
