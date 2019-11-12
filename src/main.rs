@@ -1,6 +1,5 @@
-use std::collections::HashMap;
-
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
+use serde::{Deserialize, Serialize};
 use surf::{http, http::method::Method, url};
 
 type RghResult<T> = std::result::Result<T, RghError>;
@@ -25,6 +24,21 @@ fn main() -> RghResult<()> {
     Ok(())
 }
 
+#[derive(Deserialize, Serialize)]
+struct RequestCrateRelease {
+    tag_name: String,
+    target_commitish: String,
+    name: String,
+    body: String,
+    draft: bool,
+    prerelease: bool,
+}
+
+#[derive(Deserialize, Serialize)]
+struct ResponseCreateRelease {
+    id: usize,
+}
+
 #[allow(dead_code)]
 fn github_client(
     method: http::Method,
@@ -37,26 +51,22 @@ fn github_client(
 }
 
 #[allow(dead_code)]
-async fn create_release(owner: &str, repo: &str, token: String) -> RghResult<()> {
-    let mut body = HashMap::new();
-
-    body.insert("tag_name", "");
-    body.insert("target_commitish", "");
-    body.insert("name", "");
-    body.insert("body", "");
-    body.insert("draft", "");
-    body.insert("prerelease", "");
-
-    github_client(
+async fn create_release(
+    owner: &str,
+    repo: &str,
+    token: String,
+    arg: RequestCrateRelease,
+) -> RghResult<ResponseCreateRelease> {
+    let res: ResponseCreateRelease = github_client(
         Method::POST,
         format!("/repos/{}/{}/releases", owner, repo),
-        token
+        token,
     )?
-    .body_json(&body)?
-    .recv_string()
+    .body_json(&arg)?
+    .recv_json()
     .await?;
 
-    Ok(())
+    Ok(res)
 }
 
 fn build_app() -> App<'static, 'static> {
