@@ -2,6 +2,7 @@
 
 ## Overview
 [![Actions Status](https://github.com/k-nasa/goku/workflows/CI/badge.svg)](https://github.com/k-nasa/rgh/actions)
+[![crate-name at crates.io](https://img.shields.io/crates/v/rgh.svg)](https://crates.io/crates/rgh)
 
 Creates GitHub release and upload asset files
 
