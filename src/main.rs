@@ -1,4 +1,5 @@
 use std::process::Command;
+use std::str::FromStr;
 
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
 use serde::{Deserialize, Serialize};
@@ -29,6 +30,30 @@ fn main() -> RghResult<()> {
             }
         }
     };
+    let draft = bool::from_str(matches.value_of("draft").unwrap_or("false"))?;
+    let prerelease = bool::from_str(matches.value_of("prerelease").unwrap_or("false"))?;
+
+    let request = RequestCrateRelease {
+        tag_name,
+        target_commitish: matches
+            .value_of("target_commitish")
+            .unwrap_or_default()
+            .to_owned(),
+        name: matches.value_of("name").unwrap_or_default().to_owned(),
+        body: matches.value_of("body").unwrap_or_default().to_owned(),
+        draft,
+        prerelease,
+    };
+
+    let result =
+        async_std::task::block_on(
+            async move { create_release(&owner, &repo, token, request).await },
+        );
+
+    match result {
+        Ok(_) => (),
+        Err(e) => println!("{}", e),
+    }
 
     Ok(())
 }
@@ -91,16 +116,24 @@ async fn create_release(
     token: String,
     arg: RequestCrateRelease,
 ) -> RghResult<ResponseCreateRelease> {
-    let res: ResponseCreateRelease = github_client(
+    let mut res = github_client(
         Method::POST,
         format!("/repos/{}/{}/releases", owner, repo),
-        token,
+        token.clone(),
     )?
     .body_json(&arg)?
-    .recv_json()
     .await?;
 
-    Ok(res)
+    if res.status() != 201 {
+        let e = res.body_string().await?;
+        // FIXME なぜio errorなのか
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("Failed create_release: response is {}", e),
+        )));
+    }
+
+    Ok(serde_json::from_str(&res.body_string().await?)?)
 }
 
 fn build_app() -> App<'static, 'static> {
