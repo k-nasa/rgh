@@ -24,18 +24,18 @@ brew install k-nasa/tap/rgh
 ### using cargo
 Currently it cannot be built with the stable version.
 
-```console
+```
 cargo +beta install rgh
 ```
 
 ##### Installation of cargo itself.
-```console
+```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 ## Usage
 
-```console
+```
 rgh 0.1.0
 Creates GitHub release and upload asset files
 
