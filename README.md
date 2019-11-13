@@ -11,6 +11,9 @@ Creates GitHub release and upload asset files
 
 ## Installation
 
+### Pre-compiled executables
+Get them [here](https://github.com/k-nasa/rgh/releases)
+
 #### using cargo
 Currently it cannot be built with the stable version.
 
@@ -18,7 +21,7 @@ Currently it cannot be built with the stable version.
 cargo +beta install rgh
 ```
 
-###### Installation of cargo itself.
+##### Installation of cargo itself.
 ```console
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
