@@ -1,10 +1,13 @@
 mod github;
 
-use github::{create_release, RequestCrateRelease};
+use github::{create_release, upload_asset, RequestCrateRelease};
 
 use std::process::Command;
 use std::str::FromStr;
 
+use async_std::fs;
+use async_std::path::Path;
+use async_std::prelude::*;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
 
 type RghResult<T> = std::result::Result<T, RghError>;
@@ -16,7 +19,7 @@ fn main() -> RghResult<()> {
     let matches = app.get_matches();
 
     let tag_name = matches.value_of("tag").unwrap().to_owned();
-    let _pkg = matches.value_of("packages").unwrap().to_owned();
+    let pkg = matches.value_of("packages").unwrap().to_owned();
 
     let (owner, repo) = read_gitconfig()?;
 
@@ -47,12 +50,35 @@ fn main() -> RghResult<()> {
         prerelease,
     };
 
-    let result =
-        async_std::task::block_on(
-            async move { create_release(&owner, &repo, token, request).await },
-        );
+    let result: RghResult<()> = async_std::task::block_on(async move {
+        let r = create_release(&owner, &repo, &token, request).await?;
 
-    let _id = result.map(|r| r.id)?;
+        let path = Path::new(&pkg);
+
+        if path.is_file().await {
+            upload_asset(&owner, &repo, &token, r.id, &pkg).await?;
+        } else if path.is_dir().await {
+            let mut dir = fs::read_dir(pkg).await?;
+
+            while let Some(res) = dir.next().await {
+                let entry = res?;
+                if entry.path().is_file().await {
+                    println!("{:?}", entry.path());
+                    upload_asset(&owner, &repo, &token, r.id, &entry.path().to_str().unwrap())
+                        .await?;
+                }
+            }
+        }
+        Ok(())
+    });
+
+    match result {
+        Ok(_) => (),
+        Err(e) => {
+            eprintln!("{}", e);
+            std::process::exit(1);
+        }
+    }
 
     Ok(())
 }

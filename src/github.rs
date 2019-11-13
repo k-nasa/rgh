@@ -1,3 +1,4 @@
+use async_std::path::Path;
 use serde::{Deserialize, Serialize};
 use surf::{http, http::method::Method, url};
 
@@ -22,9 +23,9 @@ type RghError = Box<dyn std::error::Error + Send + Sync>;
 fn github_client(
     method: http::Method,
     url: String,
-    token: String,
+    token: &str,
 ) -> Result<surf::Request<impl surf::middleware::HttpClient>, RghError> {
-    let url = url::Url::parse(&format!("https://api.github.com{}", url))?;
+    let url = url::Url::parse(&url)?;
 
     Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
 }
@@ -32,13 +33,13 @@ fn github_client(
 pub async fn create_release(
     owner: &str,
     repo: &str,
-    token: String,
+    token: &str,
     arg: RequestCrateRelease,
 ) -> RghResult<ResponseCreateRelease> {
     let mut res = github_client(
         Method::POST,
-        format!("/repos/{}/{}/releases", owner, repo),
-        token.clone(),
+        format!("https://api.github.com/repos/{}/{}/releases", owner, repo),
+        token,
     )?
     .body_json(&arg)?
     .await?;
@@ -53,4 +54,39 @@ pub async fn create_release(
     }
 
     Ok(serde_json::from_str(&res.body_string().await?)?)
+}
+
+pub async fn upload_asset(
+    owner: &str,
+    repo: &str,
+    token: &str,
+    release_id: usize,
+    filepath: &str,
+) -> RghResult<()> {
+    let bytes = async_std::fs::read(filepath).await?.len();
+
+    let filename = Path::new(filepath).file_name().unwrap();
+
+    let mut res = github_client(
+        Method::POST,
+        format!(
+            "https://uploads.github.com/repos/{}/{}/releases/{}/assets?name={:?}",
+            owner, repo, release_id, filename,
+        ),
+        token,
+    )?
+    .set_header("content-length", format!("{}", bytes))
+    .body_file(filepath)?
+    .await?;
+
+    if res.status() != 201 {
+        let e = res.body_string().await?;
+        // FIXME なぜio errorなのか
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!("Failed upload_assets: response is {}", e),
+        )));
+    }
+
+    Ok(())
 }
