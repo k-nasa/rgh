@@ -19,6 +19,32 @@ cargo install rgh
 
 ## Usage
 
+```console
+rgh 0.1.0
+Creates GitHub release and upload asset files
+
+USAGE:
+    rgh [OPTIONS] <tag> <packages>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+OPTIONS:
+        --commit <target-commitish>    Specifies the commitish value that determines where the Git tag is created from.
+                                       Can be any branch or commit SHA. Unused if the Git tag already exists. Default:
+                                       the repository's default branch (usually master).
+    -t, --token <token>                Set Github API Token (By default reads the GITHUB_TOKEN environment variable)
+        --title <name>                 The title of the release
+    -b, --body <body>                  Text describing the contents of the tag.
+        --draft <draft>                 [possible values: true, false]
+        --prerelease <prerelease>       [possible values: true, false]
+
+ARGS:
+    <tag>         tag
+    <packages>    upload packages dir or file
+```
+
 ## Example
 
 ## Contribution
