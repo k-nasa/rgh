@@ -1,6 +1,7 @@
 # rgh
 
 ## Overview
+
 [![Actions Status](https://github.com/k-nasa/goku/workflows/CI/badge.svg)](https://github.com/k-nasa/rgh/actions)
 [![crate-name at crates.io](https://img.shields.io/crates/v/rgh.svg)](https://crates.io/crates/rgh)
 
@@ -13,6 +14,7 @@ Creates GitHub release and upload asset files
 ## Installation
 
 ### Pre-compiled executables
+
 Get them [here](https://github.com/k-nasa/rgh/releases)
 
 ### using homebrew
@@ -22,6 +24,7 @@ brew install k-nasa/tap/rgh
 ```
 
 ### using cargo
+
 Currently it cannot be built with the stable version.
 
 ```
@@ -29,6 +32,7 @@ cargo +beta install rgh
 ```
 
 ##### Installation of cargo itself.
+
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
