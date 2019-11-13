@@ -26,20 +26,21 @@ jobs:
       - name: Install cross
         run: |
           rustup default nightly
+          rustup self update
           cargo install --force cross
 
       - name: cross build
         run: |
           cross build --target ${{ matrix.target }} --release
 
+      - name: build release package
+        run: |
           bin=${BIN_NAME}
           # winのときは.exeがいるので環境変数をセットしなおす
           if [[ ${{matrix.target}} = "x86_64-pc-windows-gnu" ]]; then bin=${BIN_NAME}.exe; fi
-
           DIRNAME=${BIN_NAME}_${{matrix.target}}
           mkdir ${DIRNAME}
           cp ./target/${{matrix.target}}/release/$bin $DIRNAME
           cp $MISC $DIRNAME
-
           mkdir dist
           tar czf dist/$DIRNAME.tar.gz $DIRNAME
