@@ -32,6 +32,7 @@ jobs:
 
       - name: cross build
         run: |
+          sudo systemctl start docker
           cross build --target ${{ matrix.target }} --release
 
       - name: build release package
