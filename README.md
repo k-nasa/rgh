@@ -15,7 +15,13 @@ Creates GitHub release and upload asset files
 ### Pre-compiled executables
 Get them [here](https://github.com/k-nasa/rgh/releases)
 
-#### using cargo
+### using homebrew
+
+```
+brew install k-nasa/tap/rgh
+```
+
+### using cargo
 Currently it cannot be built with the stable version.
 
 ```console
