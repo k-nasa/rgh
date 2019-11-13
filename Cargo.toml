@@ -2,8 +2,10 @@
 name = "rgh"
 version = "0.1.0"
 authors = ["k-nasa <htilcs1115@gmail.com>"]
+keywords = ["cli", "rgh", "github"]
+categories = ["command-line-utilities"]
 description = "Creates GitHub release and upload asset files"
-readme = "README"
+readme = "README.md"
 license = "MIT"
 edition = "2018"
 
