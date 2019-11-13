@@ -8,6 +8,7 @@ Creates GitHub release and upload asset files
 
 ## Demo
 
+![Demo](https://user-images.githubusercontent.com/23740172/68768822-9ab1dd00-0666-11ea-9bc3-469333fde310.gif)
 
 ## Installation
 
