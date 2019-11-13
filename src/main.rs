@@ -63,7 +63,7 @@ fn main() -> RghResult<()> {
             while let Some(res) = dir.next().await {
                 let entry = res?;
                 if entry.path().is_file().await {
-                    println!("{:?}", entry.path());
+                    println!("uploading {:?}", entry.path().into_os_string());
                     upload_asset(&owner, &repo, &token, r.id, &entry.path().to_str().unwrap())
                         .await?;
                 }
