@@ -12,7 +12,7 @@ env:
 jobs:
   cross_compile:
     name: Cross compile
-    runs-on: ubuntu-latest
+    runs-on: macOS-latest
     strategy:
       matrix:
         target:
@@ -23,11 +23,17 @@ jobs:
     steps:
       - uses: actions/checkout@master
 
+      - name: Install ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          override: true
+
       - name: Install cross
-        run: |
-          rustup default nightly
-          rustup self update
-          cargo install --force cross
+        uses: actions-rs/cargo@v1
+        with:
+          command: install
+          args: cross
 
       - name: cross build
         run: |
