@@ -27,6 +27,7 @@ jobs:
         run: |
           rustup default nightly
           rustup self update
+          rustup target add ${{ matrix.target }}
           cargo install --force cross
 
       - name: cross build
