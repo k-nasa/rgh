@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  pull_request:
+  create:
+    tags:
+      - v*.*.*
+env:
+  BIN_NAME: grh
+  MISC: README.md LICENSE
+
+jobs:
+  cross_compile:
+    name: Cross compile
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-apple-darwin
+          - x86_64-pc-windows-gnu
+
+    steps:
+      - name: Install cross
+        run: cargo install --force cross
+
+      - name: cross build
+        run: |
+          cross build --target ${{ matrix.target }} --release
+
+          bin=$BIN_NAME
+          # winのときは.exeがいるので環境変数をセットしなおす
+          if [[ ${{matrix.target}} = "x86_64-pc-windows-gnu" ]]; then bin=$BIN_NAME.exe; fi
+
+          TAGNAME=$(jq --raw-output .ref "$GITHUB_EVENT_PATH")
+          DIRNAME=$BIN_NAME_$TAGNAME_${{matrix.target}}
+          mkdir $DIRNAME
+          cp ./target/${{matrix.target}}/release/$bin $DIRNAME
+          cp $MISC $DIRNAME
+
+          mkdir dist
+          tar czf dist/$DIRNAME.tar.gz $DIRNAME
