@@ -24,7 +24,9 @@ jobs:
       - uses: actions/checkout@master
 
       - name: Install cross
-        run: cargo install --force cross
+        run: |
+          rustup default nightly
+          cargo install --force cross
 
       - name: cross build
         run: |
