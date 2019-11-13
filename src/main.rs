@@ -95,7 +95,6 @@ struct ResponseCreateRelease {
     id: usize,
 }
 
-#[allow(dead_code)]
 fn github_client(
     method: http::Method,
     url: String,
@@ -106,7 +105,6 @@ fn github_client(
     Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
 }
 
-#[allow(dead_code)]
 async fn create_release(
     owner: &str,
     repo: &str,
