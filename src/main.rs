@@ -1,9 +1,11 @@
+mod github;
+
+use github::{create_release, RequestCrateRelease};
+
 use std::process::Command;
 use std::str::FromStr;
 
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
-use serde::{Deserialize, Serialize};
-use surf::{http, http::method::Method, url};
 
 type RghResult<T> = std::result::Result<T, RghError>;
 type RghError = Box<dyn std::error::Error + Send + Sync>;
@@ -14,7 +16,7 @@ fn main() -> RghResult<()> {
     let matches = app.get_matches();
 
     let tag_name = matches.value_of("tag").unwrap().to_owned();
-    let pkg = matches.value_of("packages").unwrap().to_owned();
+    let _pkg = matches.value_of("packages").unwrap().to_owned();
 
     let (owner, repo) = read_gitconfig()?;
 
@@ -50,7 +52,7 @@ fn main() -> RghResult<()> {
             async move { create_release(&owner, &repo, token, request).await },
         );
 
-    let id = result.map(|r| r.id)?;
+    let _id = result.map(|r| r.id)?;
 
     Ok(())
 }
@@ -78,57 +80,6 @@ fn read_gitconfig() -> RghResult<(String, String)> {
         .trim_end_matches(".git");
 
     Ok((owner.to_owned(), repo.to_owned()))
-}
-
-#[derive(Deserialize, Serialize)]
-struct RequestCrateRelease {
-    tag_name: String,
-    target_commitish: String,
-    name: String,
-    body: String,
-    draft: bool,
-    prerelease: bool,
-}
-
-#[derive(Deserialize, Serialize)]
-struct ResponseCreateRelease {
-    id: usize,
-}
-
-fn github_client(
-    method: http::Method,
-    url: String,
-    token: String,
-) -> Result<surf::Request<impl surf::middleware::HttpClient>, RghError> {
-    let url = url::Url::parse(&format!("https://api.github.com{}", url))?;
-
-    Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
-}
-
-async fn create_release(
-    owner: &str,
-    repo: &str,
-    token: String,
-    arg: RequestCrateRelease,
-) -> RghResult<ResponseCreateRelease> {
-    let mut res = github_client(
-        Method::POST,
-        format!("/repos/{}/{}/releases", owner, repo),
-        token.clone(),
-    )?
-    .body_json(&arg)?
-    .await?;
-
-    if res.status() != 201 {
-        let e = res.body_string().await?;
-        // FIXME なぜio errorなのか
-        return Err(Box::new(std::io::Error::new(
-            std::io::ErrorKind::Other,
-            format!("Failed create_release: response is {}", e),
-        )));
-    }
-
-    Ok(serde_json::from_str(&res.body_string().await?)?)
 }
 
 fn build_app() -> App<'static, 'static> {
