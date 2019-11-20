@@ -2,6 +2,7 @@
 name = "rgh"
 version = "0.1.0"
 authors = ["k-nasa <htilcs1115@gmail.com>"]
+repository = "https://github.com/k-nasa/rgh"
 keywords = ["cli", "rgh", "github"]
 categories = ["command-line-utilities"]
 description = "Creates GitHub release and upload asset files"
