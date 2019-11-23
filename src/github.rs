@@ -91,7 +91,6 @@ pub async fn upload_asset(
             format!("Failed upload_assets: response is {}", e),
         )));
     }
-    let duration = now.elapsed();
 
     Ok(())
 }
