@@ -619,7 +619,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rgh"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "async-std 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",

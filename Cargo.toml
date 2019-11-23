@@ -1,6 +1,6 @@
 [package]
 name = "rgh"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["k-nasa <htilcs1115@gmail.com>"]
 repository = "https://github.com/k-nasa/rgh"
 keywords = ["cli", "rgh", "github"]
