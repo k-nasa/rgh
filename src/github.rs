@@ -20,6 +20,7 @@ pub struct ResponseCreateRelease {
 type RghResult<T> = std::result::Result<T, RghError>;
 type RghError = Box<dyn std::error::Error + Send + Sync>;
 
+// XXX けす
 fn github_client(
     method: http::Method,
     url: String,
@@ -67,17 +68,20 @@ pub async fn upload_asset(
 
     let filename = Path::new(filepath).file_name().unwrap();
 
-    let mut res = github_client(
-        Method::POST,
-        format!(
-            "https://uploads.github.com/repos/{}/{}/releases/{}/assets?name={:?}",
-            owner, repo, release_id, filename,
-        ),
-        token,
-    )?
-    .set_header("content-length", format!("{}", bytes))
-    .body_file(filepath)?
-    .await?;
+    let url = format!(
+        "https://uploads.github.com/repos/{}/{}/releases/{}/assets?name={:?}",
+        owner, repo, release_id, filename,
+    );
+    let url = url::Url::parse(&url)?;
+
+    let token = format!("token {}", token);
+    let bytes = format!("{}", bytes);
+
+    let mut res = surf::post(url)
+        .set_header("Authorization", &token)
+        .set_header("content-length", &bytes)
+        .body_file(filepath)?
+        .await?;
 
     if res.status() != 201 {
         let e = res.body_string().await?;
