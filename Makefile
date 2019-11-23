@@ -9,6 +9,7 @@ MISC:= README.md LICENSE
 DIRNAME:=${CRATE_NAME}_${TARGET}
 
 release_all:
+	rm -rf dist/
 	make release TARGET=x86_64-pc-windows-gnu    BIN_NAME=rgh.exe
 	make release TARGET=x86_64-apple-darwin      BIN_NAME=rgh
 	make release TARGET=x86_64-unknown-linux-gnu BIN_NAME=rgh
