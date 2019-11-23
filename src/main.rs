@@ -4,10 +4,12 @@ use github::{create_release, upload_asset, RequestCrateRelease};
 
 use std::process::Command;
 use std::str::FromStr;
+use std::sync::Arc;
 
 use async_std::fs;
 use async_std::path::Path;
 use async_std::prelude::*;
+use async_std::task;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
 
 type RghResult<T> = std::result::Result<T, RghError>;
@@ -50,7 +52,7 @@ fn main() -> RghResult<()> {
         prerelease,
     };
 
-    let result: RghResult<()> = async_std::task::block_on(async move {
+    let result: RghResult<()> = task::block_on(async move {
         let r = create_release(&owner, &repo, &token, request).await?;
 
         let path = Path::new(&pkg);
@@ -60,12 +62,31 @@ fn main() -> RghResult<()> {
         } else if path.is_dir().await {
             let mut dir = fs::read_dir(pkg).await?;
 
+            let owner = Arc::new(owner);
+            let repo = Arc::new(repo);
+            let token = Arc::new(token);
+            let r = Arc::new(r);
+
+            let mut futures = vec![];
             while let Some(res) = dir.next().await {
                 let entry = res?;
                 if entry.path().is_file().await {
-                    println!("uploading {:?}", entry.path().into_os_string());
-                    upload_asset(&owner, &repo, &token, r.id, &entry.path().to_str().unwrap())
-                        .await?;
+                    let owner = owner.clone();
+                    let repo = repo.clone();
+                    let r = r.clone();
+                    let token = token.clone();
+
+                    futures.push(task::spawn(async move {
+                        println!("uploading {:?}", entry.path().into_os_string());
+                        upload_asset(&owner, &repo, &token, r.id, &entry.path().to_str().unwrap())
+                            .await
+                    }));
+                }
+            }
+
+            for f in futures {
+                if let Err(e) = f.await {
+                    println!("failed upload file: {}", e)
                 }
             }
         }
