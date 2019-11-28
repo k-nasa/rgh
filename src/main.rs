@@ -11,6 +11,7 @@ use async_std::path::Path;
 use async_std::prelude::*;
 use async_std::task;
 use clap::{crate_description, crate_name, crate_version, App, AppSettings, Arg};
+use indicatif::{ProgressBar, ProgressStyle};
 
 type RghResult<T> = std::result::Result<T, RghError>;
 type RghError = Box<dyn std::error::Error + Send + Sync>;
@@ -68,6 +69,7 @@ fn main() -> RghResult<()> {
             let r = Arc::new(r);
 
             let mut futures = vec![];
+
             while let Some(res) = dir.next().await {
                 let entry = res?;
                 if entry.path().is_file().await {
@@ -84,7 +86,20 @@ fn main() -> RghResult<()> {
                 }
             }
 
+            let pb = ProgressBar::new(futures.iter().count() as u64);
+            let mut position = 0;
+            pb.set_style(
+                ProgressStyle::default_bar()
+                .template(
+                    "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {percent}% ({eta})",
+                )
+                .progress_chars("#>-"),
+            );
+            pb.finish_with_message("finished");
+
             for f in futures {
+                position += 1;
+                pb.set_position(position);
                 if let Err(e) = f.await {
                     println!("failed upload file: {}", e)
                 }
