@@ -1,6 +1,8 @@
 use async_std::path::Path;
 use serde::{Deserialize, Serialize};
-use surf::{http, http::method::Method, url};
+use surf::url;
+
+use crate::RghResult;
 
 #[derive(Deserialize, Serialize)]
 pub struct RequestCrateRelease {
@@ -17,37 +19,22 @@ pub struct ResponseCreateRelease {
     pub id: usize,
 }
 
-type RghResult<T> = std::result::Result<T, RghError>;
-type RghError = Box<dyn std::error::Error + Send + Sync>;
-
-// XXX けす
-fn github_client(
-    method: http::Method,
-    url: String,
-    token: &str,
-) -> Result<surf::Request<impl surf::middleware::HttpClient>, RghError> {
-    let url = url::Url::parse(&url)?;
-
-    Ok(surf::Request::new(method, url).set_header("Authorization", format!("token {}", token)))
-}
-
 pub async fn create_release(
     owner: &str,
     repo: &str,
     token: &str,
     arg: RequestCrateRelease,
 ) -> RghResult<ResponseCreateRelease> {
-    let mut res = github_client(
-        Method::POST,
-        format!("https://api.github.com/repos/{}/{}/releases", owner, repo),
-        token,
-    )?
-    .body_json(&arg)?
-    .await?;
+    let token = format!("token {}", token);
+    let url = format!("https://api.github.com/repos/{}/{}/releases", owner, repo);
+
+    let mut res = surf::post(url)
+        .set_header("Authorization", &token)
+        .body_json(&arg)?
+        .await?;
 
     if res.status() != 201 {
         let e = res.body_string().await?;
-        // FIXME なぜio errorなのか
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::Other,
             format!("Failed create_release: response is {}", e),
@@ -85,7 +72,6 @@ pub async fn upload_asset(
 
     if res.status() != 201 {
         let e = res.body_string().await?;
-        // FIXME なぜio errorなのか
         return Err(Box::new(std::io::Error::new(
             std::io::ErrorKind::Other,
             format!("Failed upload_assets: response is {}", e),
