@@ -65,8 +65,6 @@ ARGS:
     <packages>    upload packages dir or file
 ```
 
-## Example
-
 ## Contribution
 
 1. Fork it ( http://github.com/k-nasa/rgh )
