@@ -17,5 +17,5 @@ async-std = { version = "1.6.4", features = ["unstable"] }
 clap = "2.33.1"
 serde = { version = "1.0.117", features = ["derive"] }
 serde_json = "1.0.55"
-surf = "1.0.3"
+surf = "2.0.0"
 indicatif = "0.15.0"
